@@ -78,10 +78,10 @@
             <version>2.2.2</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-queryrender -->
+        <!-- https://mvnrepository.com/artifact/org.eclipse.rdf4j/rdf4j-queryresultio-text -->
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
-            <artifactId>rdf4j-queryrender</artifactId>
+            <artifactId>rdf4j-queryresultio-text</artifactId>
             <version>2.2.2</version>
         </dependency>
 
