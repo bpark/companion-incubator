@@ -1,0 +1,35 @@
+# declare this header in the top of the file
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+# modify this prefix to suit your namespace
+@prefix me: <http://www.exemple.com/> .
+
+# declare a concept scheme that represents the thesaurus, one time at the top of the file
+me:MyThesaurus a skos:ConceptScheme .
+me:MyThesaurus skos:prefLabel "Name of the thesaurus here"@en .
+
+# then declare concepts. Here is one
+me:Vehicle a skos:Concept .
+me:Vehicle a foaf:Person .
+# for each concept you need to say it is part of the thesaurus
+me:Vehicle skos:inScheme me:MyThesaurus .
+# and then declare its preferred label (the one that will appear on-screen)
+me:Vehicle skos:prefLabel "Vehicle"@en .
+
+# here is a second concept
+me:Car a skos:Concept .
+me:Car skos:inScheme me:MyThesaurus .
+me:Car skos:prefLabel "Car"@en .
+# this is an alternate label, you can put multiple ones by repeating the line
+me:Car skos:altLabel "Automobile"@en .
+# and then say that me:Car is a more specific concept than me:Vehicle
+me:Car skos:broader me:Vehicle .
+
+# and here is a third concept
+me:123456 a skos:Concept .
+me:123456 skos:inScheme me:MyThesaurus .
+me:123456 skos:prefLabel "Bicycle"@en .
+me:123456 skos:altLabel "Bike"@en .
+me:123456 skos:altLabel "Two-wheeler"@en .
+me:123456 skos:broader me:Vehicle .

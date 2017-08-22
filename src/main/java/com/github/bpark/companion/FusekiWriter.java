@@ -12,7 +12,7 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 public class FusekiWriter {
 
     public static void main(String[] args) {
-        String sparqlEndpoint = "http://192.168.56.8:3030/demo/update";
+        String sparqlEndpoint = "http://192.168.56.8:8080/demo/update";
         Repository repo = new SPARQLRepository(sparqlEndpoint);
         repo.initialize();
 

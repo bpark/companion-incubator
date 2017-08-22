@@ -13,20 +13,9 @@ import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 public class FusekiClient {
 
     public static void main(String[] args) {
-        String sparqlEndpoint = "http://192.168.56.8:3030/demo/query";
+        String sparqlEndpoint = "http://192.168.56.8:8080/demo/query";
         Repository repo = new SPARQLRepository(sparqlEndpoint);
         repo.initialize();
-
-        /*
-        String sparqlEndpoint = "http://192.168.56.8:3030/demo/update";
-
-        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-        INSERT
-        {
-            <http://edf.org/resource/dev> foaf:name "dev"
-        }
-        WHERE {}
-         */
 
         String query = "SELECT ?subject ?predicate ?object\n" +
                 "WHERE {\n" +
