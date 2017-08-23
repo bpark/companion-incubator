@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author ksr
+ * @author bpark
  */
 public class Normalizer {
 
