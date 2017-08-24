@@ -135,7 +135,10 @@ public class NWorkbench {
                 "How often are you sick?",
 
                 "How far is the bus stop from here?",
-                "How far is the university from your house?"
+                "How far is the university from your house?",
+
+                "The word what is a question word.",
+                "word what is question word."
                 );
 
         for (String question : questions) {

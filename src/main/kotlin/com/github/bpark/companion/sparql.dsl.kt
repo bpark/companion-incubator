@@ -1,10 +1,26 @@
 package com.github.bpark.companion.sparql
 
+import com.github.bpark.companion.Tag
+
 interface Element {
     fun render(builder: StringBuilder, indent: String)
 }
 
-class SPARQL : Element {
+class TextElement(val text: String) : Element {
+    override fun render(builder: StringBuilder, indent: String) {
+        builder.append("$indent$text\n")
+    }
+}
+
+abstract class TagWithText(name: String) : Tag(name) {
+    operator fun String.unaryPlus() {
+        //children.add(TextElement(this))
+    }
+}
+
+
+class SPARQL : TagWithText("sparql") {
+
     override fun render(builder: StringBuilder, indent: String) {
         builder.append("sparql")
     }
