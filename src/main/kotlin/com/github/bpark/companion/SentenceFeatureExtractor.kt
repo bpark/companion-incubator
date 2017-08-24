@@ -2,118 +2,94 @@ package com.github.bpark.companion
 
 typealias AnalyzedToken = Pair<String, String>
 
-interface FeatureExtractor {
-
-    fun extract(tokenTags: List<Pair<String, String>>, features: MutableList<Pair<String, String>> = mutableListOf()): MutableList<Pair<String, String>>
-}
-
-class StartFeatureExtractor : FeatureExtractor {
-
-    private val start = Pair("", "^")
-    private val any = Pair("", "*")
-    private val startTags = listOf("WP", "WRB", "VB")
-
-    override fun extract(tokenTags: List<Pair<String, String>>, features: MutableList<Pair<String, String>>): MutableList<Pair<String, String>> {
-        val (_, tag) = tokenTags.first()
-
-        if (startTags.stream().anyMatch { tag.startsWith(it) }) features.add(start) else features.add(any)
-
-        return features;
-    }
-
-}
-
-class FirstValueFeatureExtractor : FeatureExtractor {
-
-    override fun extract(tokenTags: List<Pair<String, String>>, features: MutableList<Pair<String, String>>): MutableList<Pair<String, String>> {
-        val (token, tag) = tokenTags.first()
-
-
-        if (tag.startsWith("WP") || tag.startsWith("WRB")) {
-            features.add(Pair("WH", token));
-        } else if (tag.startsWith("VB")) {
-            features.add(Pair("V", "_"))
-        } else {
-            features.add(Pair("", "*"))
-        }
-
-        return features;
-    }
-
-}
-
-class SecondValueFeatureExtractor : FeatureExtractor {
-
-    override fun extract(tokenTags: List<Pair<String, String>>, features: MutableList<Pair<String, String>>): MutableList<Pair<String, String>> {
-
-        val (id, _) = features.last();
-
-        val hasWh = id.startsWith("WH")
-        var hasJ = false;
-        var hasV = features.contains(Pair("V", "_"));
-
-
-        for ((token, tag) in tokenTags.drop(1)) {
-            if (hasWh && !hasJ && (tag == "JJ" || tag == "RB")) {
-                features.add(Pair("J", token))
-                hasJ = true
-            } else if (hasWh && !hasV && tag.startsWith("VB")) {
-                if (features.last() != Pair("", "*") && features.last().first != "J") {
-                    features.add(Pair("", "*"))
-                }
-                features.add(Pair("V", "_"))
-                hasV = true
-            } else if (features.last() != Pair("", "*") && tag != "*") {
-                features.add(Pair("", "*"))
-            }
-        }
-        return features
-    }
-
-}
-
-
 class SentenceFeatureExtractor {
 
     private val olp = OLP.createInstance().withPosTagger().withTokenizer().withSentenceDetector()
-
-    private val keepTokens = listOf("WP", "WRB", "VB", "JJ", "RB", ".")
 
     fun prepare(sentence: String) {
 
         val tokens = olp.tokenize(sentence)
         val tags = olp.tag(sentence)
 
-        val tokenTags = mapToAnalyzed(tokens, tags)
+        val analyzedTokens = mapToAnalyzed(tokens, tags)
+        val filteredTokens = filterRelevant(analyzedTokens)
+        val shrinkedTokens = shrink(filteredTokens)
+        val tokensWithStart = defineStart(shrinkedTokens)
 
         println()
         println(sentence)
-        println(tokenTags.joinToString(" "))
+        println(analyzedTokens.joinToString(" "))
+        println(filteredTokens.joinToString(" "))
+        println(shrinkedTokens.joinToString(" "))
+        println(tokensWithStart.joinToString(" "))
 
-        val featureExtractors = listOf(StartFeatureExtractor(), FirstValueFeatureExtractor(), SecondValueFeatureExtractor())
-
-        val features = mutableListOf<Pair<String, String>>()
-
-        featureExtractors.forEach { it.extract(tokenTags, features) }
-
-        val pattern = features.joinToString(" ");
-
-        println(pattern)
     }
 
     private fun mapToAnalyzed(tokens: List<String>, tags: List<String>): List<AnalyzedToken> {
         val tokenTags = mutableListOf<Pair<String, String>>()
 
         for ((index, token) in tokens.withIndex()) {
-            val tag = tags[index]
+            var tag = tags[index]
+            if (startsWith(tag, listOf("WRB", "WP"))) {
+                tag = "WH"
+            }
+            if (tag.startsWith("VB")) {
+                tag = "V"
+            }
+            if (tag == "JJ" || tag == "RB") {
+                tag = "J"
+            }
             tokenTags.add(Pair(token, tag))
         }
 
-        return tokenTags;
+        return tokenTags
     }
 
-    private fun filterRelevant(analyzedTokens: List<AnalyzedToken>) {
-        
+    private fun filterRelevant(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
+        return analyzedTokens.map { if (startsWith(it.second, listOf("WH", "V", "J"))) it else AnalyzedToken("", "*") }
+    }
+
+    private fun shrink(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
+        val filtered = analyzedTokens.toMutableList()
+
+        for (tag in listOf("WH", "V", "J")) {
+            val index = filtered.indexOfFirst { it.second == tag }
+            if (index != -1) {
+                val first = filtered[index]
+                filtered.removeAll { it.second == tag }
+                filtered.add(index, first)
+            }
+        }
+
+        val reduced = mutableListOf<AnalyzedToken>()
+
+        filtered.forEach { if (reduced.lastOrNull() != it) reduced.add(it) }
+
+        return reduced
+    }
+
+    private fun defineStart(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
+        val (_, tag) = analyzedTokens.first()
+
+        val tokens = analyzedTokens.toMutableList()
+
+        if (tag == "WH" || tag == "V") {
+            tokens.add(0, AnalyzedToken("", "^"))
+        } else if (tag != "*") {
+            tokens.add(0, AnalyzedToken("", "*"))
+        }
+
+        return tokens
+    }
+
+    /*
+    private fun fill(analyzedTokens: List<AnalyzedToken>) : List<AnalyzedToken> {
+        analyzedTokens
+        analyzedTokens.toMutableList().
+    }*/
+
+    private fun startsWith(item: String, list: List<String>): Boolean {
+        return list.stream().anyMatch { item.startsWith(it) }
     }
 
 }
@@ -135,4 +111,5 @@ fun main(args: Array<String>) {
     sentenceFeatureExtractor.prepare("The word what is a question word.")
     sentenceFeatureExtractor.prepare("The word what is question word.")
     sentenceFeatureExtractor.prepare("Do it now!")
+    sentenceFeatureExtractor.prepare("What does the word what mean")
 }
