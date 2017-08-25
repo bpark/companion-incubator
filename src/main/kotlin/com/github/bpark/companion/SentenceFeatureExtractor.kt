@@ -1,15 +1,19 @@
 package com.github.bpark.companion
 
+import org.apache.commons.io.IOUtils
+import java.nio.charset.StandardCharsets
+
 typealias AnalyzedToken = Pair<String, String>
 
 class SentenceFeatureExtractor {
 
-    private val olp = OLP.createInstance().withPosTagger().withTokenizer().withSentenceDetector()
+    private val olp = OLP.createInstance().withPosTagger().withTokenizer()
 
-    fun prepare(sentence: String) {
+    fun prepare(sentence: String): List<AnalyzedToken> {
 
         val tokens = olp.tokenize(sentence)
         val tags = olp.tag(sentence)
+
 
         val analyzedTokens = mapToAnalyzed(tokens, tags)
         val filteredTokens = filterRelevant(analyzedTokens)
@@ -17,13 +21,19 @@ class SentenceFeatureExtractor {
         val tokensWithStart = defineStart(shrinkedTokens)
         val filledTokens = fill(tokensWithStart)
 
-        println()
-        println(sentence)
-        println(analyzedTokens.joinToString(" "))
-        println(filteredTokens.joinToString(" "))
-        println(shrinkedTokens.joinToString(" "))
-        println(tokensWithStart.joinToString(" "))
-        println(filledTokens.joinToString(" "))
+        println("{")
+        println("    \"sentence\": \"$sentence\",")
+        println("    \"tokens\": [" + tokens.joinToString("\", \"", "\"",  "\"") + "],")
+        println("    \"tags\": [" + tags.joinToString("\", \"", "\"",  "\"") + "],")
+        println("    \"result\": [" + filledTokens.joinToString("\", \"", "\"",  "\"") + "]")
+        if (filledTokens.size > 8) println("**** greater 8")
+        //println(analyzedTokens.joinToString(" "))
+        //println(filteredTokens.joinToString(" "))
+        //println(shrinkedTokens.joinToString(" "))
+        //println(tokensWithStart.joinToString(" "))
+        println("},")
+
+        return filledTokens
 
     }
 
@@ -38,7 +48,7 @@ class SentenceFeatureExtractor {
             if (tag.startsWith("VB")) {
                 tag = "V"
             }
-            if (tag == "JJ" || tag == "RB") {
+            if (tag.startsWith("J") || tag == "RB") {
                 tag = "J"
             }
             tokenTags.add(Pair(token, tag))
@@ -52,7 +62,14 @@ class SentenceFeatureExtractor {
     }
 
     private fun filterRelevant(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
-        return analyzedTokens.map { if (startsWith(it.second, listOf("WH", "V", "J", "."))) it else AnalyzedToken("", "*") }
+        val filteredTokens = analyzedTokens.map { if (startsWith(it.second, listOf("WH", "V", "J", "."))) it else AnalyzedToken("", "*") }.toMutableList()
+        filteredTokens.forEachIndexed { index, pair ->
+            run {
+                if (pair.second == "V") filteredTokens.set(index, AnalyzedToken("_", "V"))
+                if (pair.second == "J" && !listOf<String>("much", "often", "many", "far").contains(pair.first) ) filteredTokens.set(index, AnalyzedToken("", "*"))
+            }
+        }
+        return filteredTokens
     }
 
     private fun shrink(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
@@ -92,7 +109,7 @@ class SentenceFeatureExtractor {
 
         val tokens = analyzedTokens.toMutableList()
 
-        while (tokens.size < 6) {
+        while (tokens.size < 8) {
             tokens.add(tokens.size - 1, AnalyzedToken("", "*"))
         }
 
@@ -107,6 +124,19 @@ class SentenceFeatureExtractor {
 
 fun main(args: Array<String>) {
     val sentenceFeatureExtractor = SentenceFeatureExtractor()
+
+    val content = IOUtils.toString(SentenceFeatureExtractor::class.java.getResourceAsStream("/corpus0.txt"), StandardCharsets.UTF_8)
+
+    val olp = OLP.createInstance().withSentenceDetector()
+
+    val sentences = olp.sentence(content)
+
+    sentences.forEach {
+        sentenceFeatureExtractor.prepare(it)
+    }
+
+    /*
+
     sentenceFeatureExtractor.prepare("What is your name?")
     sentenceFeatureExtractor.prepare("The word what introduces a question?")
     sentenceFeatureExtractor.prepare("How do you cook paella?")
@@ -124,5 +154,5 @@ fun main(args: Array<String>) {
     sentenceFeatureExtractor.prepare("Do it now!")
     sentenceFeatureExtractor.prepare("What does the word what mean")
     sentenceFeatureExtractor.prepare("Hello")
-    sentenceFeatureExtractor.prepare("This is not true!!!!!!")
+    sentenceFeatureExtractor.prepare("This is not true!!!!!!") */
 }
