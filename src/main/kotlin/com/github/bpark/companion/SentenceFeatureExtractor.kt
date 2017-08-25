@@ -15,6 +15,7 @@ class SentenceFeatureExtractor {
         val filteredTokens = filterRelevant(analyzedTokens)
         val shrinkedTokens = shrink(filteredTokens)
         val tokensWithStart = defineStart(shrinkedTokens)
+        val filledTokens = fill(tokensWithStart)
 
         println()
         println(sentence)
@@ -22,6 +23,7 @@ class SentenceFeatureExtractor {
         println(filteredTokens.joinToString(" "))
         println(shrinkedTokens.joinToString(" "))
         println(tokensWithStart.joinToString(" "))
+        println(filledTokens.joinToString(" "))
 
     }
 
@@ -42,17 +44,21 @@ class SentenceFeatureExtractor {
             tokenTags.add(Pair(token, tag))
         }
 
+        if (tags.last() != ".") {
+            tokenTags.add(AnalyzedToken(".", "."))
+        }
+
         return tokenTags
     }
 
     private fun filterRelevant(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
-        return analyzedTokens.map { if (startsWith(it.second, listOf("WH", "V", "J"))) it else AnalyzedToken("", "*") }
+        return analyzedTokens.map { if (startsWith(it.second, listOf("WH", "V", "J", "."))) it else AnalyzedToken("", "*") }
     }
 
     private fun shrink(analyzedTokens: List<AnalyzedToken>): List<AnalyzedToken> {
         val filtered = analyzedTokens.toMutableList()
 
-        for (tag in listOf("WH", "V", "J")) {
+        for (tag in listOf("WH", "V", "J", ".")) {
             val index = filtered.indexOfFirst { it.second == tag }
             if (index != -1) {
                 val first = filtered[index]
@@ -82,11 +88,16 @@ class SentenceFeatureExtractor {
         return tokens
     }
 
-    /*
     private fun fill(analyzedTokens: List<AnalyzedToken>) : List<AnalyzedToken> {
-        analyzedTokens
-        analyzedTokens.toMutableList().
-    }*/
+
+        val tokens = analyzedTokens.toMutableList()
+
+        while (tokens.size < 6) {
+            tokens.add(tokens.size - 1, AnalyzedToken("", "*"))
+        }
+
+        return tokens
+    }
 
     private fun startsWith(item: String, list: List<String>): Boolean {
         return list.stream().anyMatch { item.startsWith(it) }
@@ -112,4 +123,6 @@ fun main(args: Array<String>) {
     sentenceFeatureExtractor.prepare("The word what is question word.")
     sentenceFeatureExtractor.prepare("Do it now!")
     sentenceFeatureExtractor.prepare("What does the word what mean")
+    sentenceFeatureExtractor.prepare("Hello")
+    sentenceFeatureExtractor.prepare("This is not true!!!!!!")
 }
