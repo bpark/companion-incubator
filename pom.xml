@@ -187,10 +187,6 @@
             <scope>runtime</scope>
         </dependency>
 
-
-
-
-
         <!-- Test Dependencies -->
 
         <dependency>
@@ -201,5 +197,12 @@
         </dependency>
 
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <url>http://jcenter.bintray.com/</url>
+        </repository>
+    </repositories>
 
 </project>
