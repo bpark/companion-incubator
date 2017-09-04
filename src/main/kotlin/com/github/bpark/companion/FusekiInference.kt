@@ -37,7 +37,7 @@ object FusekiInference {
         httpPost.setEntity(entity);
         httpPost.setHeader("Content-type", "application/turtle");
 
-        val creds = UsernamePasswordCredentials("admin", "5ldWWIlKYEVnTCh")
+        val creds = UsernamePasswordCredentials("admin", "yS5LU1IpjoVpMPA")
         httpPost.addHeader(BasicScheme().authenticate(creds, httpPost, null))
 
         val response = client.execute(httpPost);
@@ -54,7 +54,7 @@ object FusekiInference {
         repo.initialize()
 
 
-        repo.connection.use { conn -> conn.add(File("data/inference-data.ttl"), null, RDFFormat.TURTLE) }
+        repo.connection.use { conn -> conn.add(File("data/human-relations.ttl"), null, RDFFormat.TURTLE) }
 
     }
 
@@ -66,9 +66,9 @@ object FusekiInference {
 
         val query = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-                "PREFIX ex: <http://example.org/>\n" +
-                "SELECT * WHERE {\n" +
-                "  ?sub a ex:animal\n" +
+                "PREFIX hr: <http://xmlns.com/hr/0.1/>\n" +
+                "SELECT ?son WHERE {\n" +
+                "  hr:Anakin hr:hasSon ?son\n" +
                 "}\n" +
                 "LIMIT 10"
 

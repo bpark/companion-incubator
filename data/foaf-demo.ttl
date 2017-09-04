@@ -16,14 +16,6 @@ foaf:Person a rdfs:Class ;
 foaf:Organization a rdfs:Class ;
   rdfs:subClassOf foaf:Agent .
 
-foaf:fatherOf a rdfs:Property ;
-  rdf:about "http://xmlns.com/foaf/0.1/fatherOf" ;
-  rdfs:comment "A person known by this person (indicating some level of reciprocated interaction between the parties)." ;
-  rdf:type "http://www.w3.org/2002/07/owl#ObjectProperty" ;
-  rdfs:domain "http://xmlns.com/foaf/0.1/Person" ;
-  rdfs:range "http://xmlns.com/foaf/0.1/Person" ;
-  rdfs:isDefinedBy "http://xmlns.com/foaf/0.1/" .
-
 # Finally, we're ready to declare our data.
 
 :HMSS a foaf:Organization ;
@@ -38,7 +30,6 @@ foaf:fatherOf a rdfs:Property ;
   foaf:name "M" ;
   foaf:knows :Q ;
   foaf:knows :Bond ;
-  foaf:fatherOf :Q ;
   foaf:knows :Kerim .
 
 :Q a foaf:Person ;

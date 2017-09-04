@@ -1,0 +1,23 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix hr: <http://xmlns.com/hr/0.1/> .
+
+rdfs:Class a owl:Class .
+
+hr:Person a owl:Class .
+
+hr:hasSon a owl:ObjectProperty ;
+	rdfs:domain hr:Person ;
+	owl:inverseOf hr:isSonOf .
+
+hr:isSonOf a owl:ObjectProperty ;
+	rdfs:domain hr:Person ;
+    owl:inverseOf hr:hasSon .
+
+
+
+hr:Luke a hr:Person ;
+	hr:isSonOf hr:Anakin .
+
+hr:Anakin a hr:Person .
