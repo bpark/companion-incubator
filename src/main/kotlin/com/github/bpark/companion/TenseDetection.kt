@@ -14,6 +14,8 @@ VB	Verb, base form
 32.	VBZ	Verb, 3rd person singular present
  */
 
+data class WordInfo(val token: String, val tag: String, val lemma: String?)
+
 object TenseDetection {
 
     val olp = OLP.createInstance().withTokenizer().withPosTagger();
@@ -37,14 +39,17 @@ object TenseDetection {
         val tags = olp.tag(sentence)
         val tokens = olp.tokenize(sentence)
 
-        val analyzed = mutableListOf<String>()
+        val wordInfos = mutableListOf<WordInfo>()
 
         tags.forEachIndexed { index, tag ->
             run {
+                val token = tokens[index]
+                val word = removeContractions(token)
+                var lemma: String? = null
+
                 val pos = PosType.byPennTag(tag)
                 if (pos != null) {
 
-                    val word = removeContractions(tokens[index])
                     val stems = stemmer.findStems(word, pos)
                     val stem = if (stems != null && stems.size > 0) stems[0] else word
 
@@ -54,13 +59,16 @@ object TenseDetection {
 
                         val wordID = idxWord.wordIDs.first() // 1st meaning
                         val dictionaryWord = dictionary.getWord(wordID)
-                        analyzed.add(dictionaryWord.lemma)
+                        lemma = dictionaryWord.lemma
                     }
                 }
+
+                wordInfos.add(WordInfo(word, tag, lemma))
+
             }
         }
 
-        println("sentence: $sentence, tags: $tags, tokens: $tokens, wordnet: $analyzed")
+        println("sentence: $sentence, wordInfos: $wordInfos")
 
     }
 
