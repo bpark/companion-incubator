@@ -14,7 +14,17 @@ VB	Verb, base form
 32.	VBZ	Verb, 3rd person singular present
  */
 
-data class WordInfo(val token: String, val tag: String, val lemma: String?)
+data class WordInfo(val token: String, val tag: String, val lemma: String?) {
+
+    fun map(): String {
+        return when {
+            (tag == "VBP" || tag == "VBZ") && lemma == "be" -> "$tag($lemma)"
+            tag == "VBD" && lemma == "be" -> "$tag($lemma)"
+            tag == "VBP" || tag == "VBG" || tag == "VBZ" -> tag
+            else -> tag
+        }
+    }
+}
 
 object TenseDetection {
 
@@ -26,6 +36,12 @@ object TenseDetection {
     val presentProgressive = listOf<String>("He's there", "I'm working.", "I'm not working.", "Am I working?", "He's working.", "He isn't working.",
             "Is he working?", "I'm going.", "I'm not going.", "Am I going?", "He's going.", "He isn't going.", "Is he going?")
 
+    val simplePast = listOf<String>("I worked.", "I didn't work.", "Did I work?", "He worked.", "He didn't work.", "Did he work?",
+            "I went.", "I didn't go.", "Did I go?", "He went.", "He didn't go.", "Did he go?")
+
+    val pastProgressive = listOf<String>("I was working.", "I wasn't working.", "Was I working?", "He was working.", "He wasn't working.",
+            "Was he working?", "I was going.", "I wasn't going.", "Was I going?", "He was going.", "He wasn't going.", "Was he going?")
+
     val path = "dict"
     val dictionary = Dictionary(File(path))
     val stemmer = WordnetStemmer(dictionary)
@@ -35,7 +51,14 @@ object TenseDetection {
 
     }
 
-    fun detect(sentence: String) {
+    fun buildBag(wordinfos: List<WordInfo>): List<String> {
+        val verbs = wordinfos.filter { it.tag.startsWith("V") }
+
+        return verbs.mapIndexed { index, verb -> verb.map() }
+
+    }
+
+    fun buildWordInfo(sentence: String): List<WordInfo> {
         val tags = olp.tag(sentence)
         val tokens = olp.tokenize(sentence)
 
@@ -68,8 +91,7 @@ object TenseDetection {
             }
         }
 
-        println("sentence: $sentence, wordInfos: $wordInfos")
-
+        return wordInfos
     }
 
     fun removeContractions(inputString: String): String {
@@ -94,8 +116,28 @@ object TenseDetection {
 
 fun main(args: Array<String>) {
 
-    TenseDetection.simplePresent.forEach { TenseDetection.detect(it) }
+    TenseDetection.simplePresent.forEach {
+        val wordinfos = TenseDetection.buildWordInfo(it)
+        val bags = TenseDetection.buildBag(wordinfos)
+        println("$it: $bags -> $wordinfos")
+    }
     println()
-    TenseDetection.presentProgressive.forEach { TenseDetection.detect(it) }
-    
+    TenseDetection.presentProgressive.forEach {
+        val wordinfos = TenseDetection.buildWordInfo(it)
+        val bags = TenseDetection.buildBag(wordinfos)
+        println("$it: $bags -> $wordinfos")
+    }
+    println()
+    TenseDetection.simplePast.forEach {
+        val wordinfos = TenseDetection.buildWordInfo(it)
+        val bags = TenseDetection.buildBag(wordinfos)
+        println("$it: $bags -> $wordinfos")
+    }
+    println()
+    TenseDetection.pastProgressive.forEach {
+        val wordinfos = TenseDetection.buildWordInfo(it)
+        val bags = TenseDetection.buildBag(wordinfos)
+        println("$it: $bags -> $wordinfos")
+    }
+
 }
