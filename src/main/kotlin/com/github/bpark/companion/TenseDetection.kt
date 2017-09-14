@@ -23,6 +23,7 @@ data class WordInfo(val token: String, val tag: String, val lemma: String?) {
             (tag == "VBD" || tag == "VBN") && lemma == "be" -> "$tag($lemma)"
             tag == "VBD" && lemma == "have" -> "$tag($lemma)"
             tag == "VBP" || tag == "VBG" || tag == "VBZ" -> tag
+            tag == "MD" && token == "will" -> "$tag($token)"
             else -> tag
         }
     }
@@ -74,7 +75,7 @@ object TenseDetection {
     }
 
     fun buildBag(wordinfos: List<WordInfo>): List<String> {
-        val verbs = wordinfos.filter { it.tag.startsWith("V") }
+        val verbs = wordinfos.filter { it.tag.startsWith("V") || (it.tag == "MD" && it.token == "will") }
 
         return verbs.mapIndexed { index, verb -> verb.map() }
 
@@ -88,9 +89,8 @@ object TenseDetection {
 
         tags.forEachIndexed { index, tag ->
             run {
-                val token = tokens[index]
+                val token = tokens[index].toLowerCase()
                 val word = removeContractions(token)
-                if (token == "won't") println(word)
                 var lemma: String? = null
 
                 val pos = PosType.byPennTag(tag)
@@ -121,12 +121,12 @@ object TenseDetection {
 
         var normalForm = inputString
 
-        normalForm = normalForm.replace("won't".toRegex(), "will not")
-        normalForm = normalForm.replace("n't".toRegex(), " not")
-        normalForm = normalForm.replace("'re".toRegex(), " are")
+        normalForm = normalForm.replace("^wo$".toRegex(), "will")
+        normalForm = normalForm.replace("n't".toRegex(), "not")
+        normalForm = normalForm.replace("'re".toRegex(), "are")
         normalForm = normalForm.replace("'m".toRegex(), " am")
-        normalForm = normalForm.replace("'ll".toRegex(), " will")
-        normalForm = normalForm.replace("'ve".toRegex(), " have")
+        normalForm = normalForm.replace("'ll".toRegex(), "will")
+        normalForm = normalForm.replace("'ve".toRegex(), "have")
 
         // conversional
         normalForm = normalForm.replace("'d".toRegex(), "would")
