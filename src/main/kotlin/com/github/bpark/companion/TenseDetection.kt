@@ -22,6 +22,7 @@ data class WordInfo(val token: String, val tag: String, val lemma: String?) {
             (tag == "VBP" || tag == "VBZ") && lemma == "have" -> "$tag($lemma)"
             (tag == "VBD" || tag == "VBN") && lemma == "be" -> "$tag($lemma)"
             tag == "VBD" && lemma == "have" -> "$tag($lemma)"
+            tag == "VBG" && token == "going" -> "$tag($token)"
             tag == "VBP" || tag == "VBG" || tag == "VBZ" -> tag
             tag == "MD" && token == "will" -> "$tag($token)"
             else -> tag
@@ -62,8 +63,36 @@ object TenseDetection {
     val willFuture = listOf<String>("I'll work.", "I won't work.", "Will I work?", "He'll work.", "He won't work.", "Will he work?", "I'll go.",
             "I won't go.", "Will I go?", "He'll go.", "He won't go.", "Will he go?")
 
+    val goingToFuture = listOf<String>("I'm going to work.", "I'm not going to work.", "Am I going to work?", "He's going to work.", "He's not going to work.",
+            "Is he going to work?", "I'm going to go.", "I'm not going to go.", "Am I going to go?", "He's going to go.", "He's not going to go.",
+            "Is he going to go?")
+
+    val simpleFuturePerfect = listOf<String>("I'll have worked.", "I won't have worked.", "Will I have worked?", "He'll have worked.", "He won't have worked.",
+            "Will he have worked?", "I'll have gone.", "I won't have gone.", "Will I have gone?", "He'll have gone.", "He won't have gone.", "Will he have gone?")
+
+    val futurePerfectProgressive = listOf<String>("I'll have been working.", "I won't have been working.", "Will I have been working?", "He'll have been working.",
+            "He won't have been working.", "Will he have been working?", "I'll have been going.", "I won't have been going.", "Will I have been working?",
+            "He'll have been going.", "He won't have been going.", "Will he have been working?")
+
+    val conditionalSimple = listOf<String>("I would work.", "I wouldn't work.", "Would I work?", "He would work.", "He wouldn't work.", "Would he work?",
+            "I would go.", "I wouldn't go.", "Would I go?", "He would go.", "He wouldn't go.", "Would he go?")
+
+    val conditionalProgressive = listOf<String>("I would be working.", "I wouldn't be working.", "Would I be working?", "He would be working.",
+            "He wouldn't be working.", "Would he be working?", "I would be going.", "I wouldn't be going.", "Would I be going?", "He would be going.",
+            "He wouldn't be going.", "Would he be going?")
+
+    val conditionalPerfect = listOf<String>("I would have worked.", "I wouldn't have worked.", "Would I have worked?", "He would have worked.",
+            "He wouldn't have worked.", "Would he have worked?", "I would have gone.", "I wouldn't have gone.", "Would I have gone?",
+            "He would have gone.", "He wouldn't have gone.", "Would I have gone?")
+
+    val conditionalPerfectProgressive = listOf<String>("I would have been working.", "I wouldn't have been working.", "Would I have been working?",
+            "He would have been going.", "He wouldn't have been going.", "Would he have been working?", "I would have been going.",
+            "I wouldn't have been going.", "Would I have been going?", "He would have been going.", "He wouldn't have been going.",
+            "Would he have been going?")
+
     val tensePhrases = listOf<List<String>>(simplePresent, presentProgressive, simplePast, pastProgressive,
-            simplePresentPerfect, presentPerfectProgressive, simplePastPerfect, pastPerfectProgressive, willFuture)
+            simplePresentPerfect, presentPerfectProgressive, simplePastPerfect, pastPerfectProgressive, willFuture,
+            goingToFuture)
 
     val path = "dict"
     val dictionary = Dictionary(File(path))
@@ -75,7 +104,11 @@ object TenseDetection {
     }
 
     fun buildBag(wordinfos: List<WordInfo>): List<String> {
-        val verbs = wordinfos.filter { it.tag.startsWith("V") || (it.tag == "MD" && it.token == "will") }
+        val verbs = wordinfos.filter {
+                    it.tag.startsWith("V") ||
+                    (it.tag == "MD" && it.token == "will") ||
+                    it.tag == "TO"
+        }
 
         return verbs.mapIndexed { index, verb -> verb.map() }
 
