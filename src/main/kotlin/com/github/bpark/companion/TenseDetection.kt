@@ -16,15 +16,15 @@ VB	Verb, base form
 
 data class WordInfo(val token: String, val tag: String, val lemma: String?) {
 
-    fun map(): String {
+    fun map(index: Int): String {
         return when {
-            (tag == "VBP" || tag == "VBZ") && lemma == "be" -> "$tag($lemma)"
-            (tag == "VBP" || tag == "VBZ") && lemma == "have" -> "$tag($lemma)"
-            (tag == "VBD" || tag == "VBN") && lemma == "be" -> "$tag($lemma)"
-            tag == "VBD" && lemma == "have" -> "$tag($lemma)"
-            tag == "VBG" && token == "going" -> "$tag($token)"
-            tag == "VBP" || tag == "VBG" || tag == "VBZ" -> tag
-            tag == "MD" && token == "will" -> "$tag($token)"
+            (tag == "VBP" || tag == "VBZ") && lemma == "be" -> "$tag($lemma,$index)"
+            (tag == "VBP" || tag == "VBZ") && lemma == "have" -> "$tag($lemma,$index)"
+            (tag == "VBD" || tag == "VBN") && lemma == "be" -> "$tag($lemma,$index)"
+            (tag == "VBD" || tag == "VB") && lemma == "have" -> "$tag($lemma,$index)"
+            tag == "VBG" && token == "going" -> "$tag($token,$index)"
+            tag == "MD" && (token == "will" || token == "would") -> "$tag($token,$index)"
+            tag == "VBP" || tag == "VBG" || tag == "VBZ" -> "$tag($index)"
             else -> tag
         }
     }
@@ -46,11 +46,11 @@ object TenseDetection {
     fun buildBag(wordinfos: List<WordInfo>): List<String> {
         val verbs = wordinfos.filter {
                     it.tag.startsWith("V") ||
-                    (it.tag == "MD" && it.token == "will") ||
+                    (it.tag == "MD" && (it.token == "will" || it.token == "would")) ||
                     it.tag == "TO"
         }
 
-        return verbs.mapIndexed { index, verb -> verb.map() }
+        return verbs.mapIndexed { index, verb -> verb.map(index) }
 
     }
 
@@ -127,14 +127,19 @@ fun main(args: Array<String>) {
 
     val sentenceMap = TenseDetection.loadSentences()
 
+    val content = mutableListOf<String>()
+
     sentenceMap.forEach { tense, sentences -> run {
         println(tense)
         sentences.forEach {
             val wordinfos = TenseDetection.buildWordInfo(it.replace("\"", ""))
             val bags = TenseDetection.buildBag(wordinfos)
             println("$it: $bags -> $wordinfos")
+            content.add("$tense,\"" + bags.joinToString(" ") + "\"")
         }
         println()
     } }
+
+    File("tenses.arff").writeText(content.joinToString("\n"))
 
 }
