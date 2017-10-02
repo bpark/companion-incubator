@@ -1,0 +1,24 @@
+@prefix :      <http://base/#> .
+@prefix tdb:   <http://jena.hpl.hp.com/2008/tdb#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix ja:    <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix root:  <http://192.168.56.8:3030/$/datasets#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix fuseki: <http://jena.apache.org/fuseki#> .
+
+:dataset  a     ja:RDFDataset ;
+  ja:defaultGraph <#model_inf_1> ;
+  .
+
+root:model_inf_1  rdfs:label  "Inf-1" ;
+        ja:reasoner  [ ja:reasonerURL  <http://jena.hpl.hp.com/2003/OWLFBRuleReasoner> ] .
+
+:service1  a                          fuseki:Service ;
+        fuseki:dataset                :dataset ;
+        fuseki:name                   "weather" ;
+        fuseki:serviceQuery           "sparql" , "query" ;
+        fuseki:serviceReadGraphStore  "get" ;
+        fuseki:serviceReadWriteGraphStore
+                "data" ;
+        fuseki:serviceUpdate          "update" ;
+        fuseki:serviceUpload          "upload" .

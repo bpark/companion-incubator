@@ -37,7 +37,7 @@ object FusekiInference {
         httpPost.setEntity(entity);
         httpPost.setHeader("Content-type", "application/turtle");
 
-        val creds = UsernamePasswordCredentials("admin", "yS5LU1IpjoVpMPA")
+        val creds = UsernamePasswordCredentials("admin", "jPji3a1FUTZCVse")
         httpPost.addHeader(BasicScheme().authenticate(creds, httpPost, null))
 
         val response = client.execute(httpPost);

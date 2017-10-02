@@ -1,0 +1,55 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix weather: <http://xmlns.com/weather/0.1/> .
+
+rdfs:Class a owl:Class .
+
+weather:City a owl:Class .
+
+weather:Forecast a owl:Class .
+
+weather:cityName a rdf:Property ;
+	rdfs:domain weather:City ;
+    rdfs:label "city name" ;
+    rdfs:comment "This is the name of the city location" ;
+    a owl:DatatypeProperty ;
+    rdfs:range rdfs:Literal .
+
+weather:forecast a rdf:Property ;
+	rdfs:label "forecast" ;
+	rdfs:comment "a forecast item" ;
+	a owl:ObjectProperty ;
+	rdfs:domain weather:City ;
+	rdfs:range weather:ForeCast .
+
+weather:city a owl:ObjectProperty ;
+	rdfs:domain weather:Forecast ;
+	owl:inverseOf weather:forecast .
+
+weather:temperature a rdf:Property ;
+	rdfs:domain weather:Forecast ;
+    rdfs:label "temperature" ;
+    rdfs:comment "temperature forecast" ;
+    a owl:DatatypeProperty ;
+    rdfs:range rdfs:Literal .
+
+weather:description a rdf:Property ;
+	rdfs:domain weather:Forecast ;
+    rdfs:label "description" ;
+    rdfs:comment "simple weather description" ;
+    a owl:DatatypeProperty ;
+    rdfs:range rdfs:Literal .
+
+weather:6940463 a weather:City ;
+	weather:cityName "Altstadt" ;
+	weather:forecast weather:1487246400 .
+
+weather:1487246400 a weather:Forecast ;
+	weather:temperature "34.4" ;
+	weather:description "clear sky" .
+
+weather:1487257200 a weather:Forecast ;
+	weather:temperature "37.4" ;
+	weather:description "clear sky" ;
+	weather:city weather:6940463 .
