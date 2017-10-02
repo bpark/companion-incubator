@@ -25,7 +25,7 @@ data class WordInfo(val token: String, val tag: String, val lemma: String?) {
             tag == "VBG" && token == "going" -> "$tag($token,$index)"
             tag == "MD" && (token == "will" || token == "would") -> "$tag($token,$index)"
             tag == "VBP" || tag == "VBG" || tag == "VBZ" -> "$tag($index)"
-            else -> tag
+            else -> "$tag($index)"
         }
     }
 }
