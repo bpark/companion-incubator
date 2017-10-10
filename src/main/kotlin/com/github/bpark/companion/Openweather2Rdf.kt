@@ -47,7 +47,7 @@ object WeatherInference {
         httpPost.setEntity(entity);
         httpPost.setHeader("Content-type", "application/turtle");
 
-        val creds = UsernamePasswordCredentials("admin", "jPji3a1FUTZCVse")
+        val creds = UsernamePasswordCredentials("admin", "1afbda62-8ec9-47a3-a96f-40b58b13c150")
         httpPost.addHeader(BasicScheme().authenticate(creds, httpPost, null))
 
         val response = client.execute(httpPost);
